@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<script src="../libs/mui/js/mui.min.js"></script>
+		<link href="../libs/mui/css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="../css/app.css" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">登录</h1>
+		</header>
+		<div id="app" class="mui-content" style="margin-top: 20px;">
+			<form class="mui-input-group" style="padding: 20px 0 10px 0;">
+				<div class="mui-input-row">
+					<label>用户名</label>
+					<input type="text" v-model="userLogin.username" class="mui-input-clear" placeholder="请输入用户名">
+				</div>
+				<div class="mui-input-row">
+					<label>密码</label>
+					<input type="password" v-model="userLogin.password" class="mui-input-password" placeholder="请输入密码">
+				</div>
+				<div class="mui-input-row" v-show="isRegister">
+					<label>确认密码</label>
+					<input type="password" v-model="userLogin.rePassword" class="mui-input-password" placeholder="请输入密码">
+				</div>
+				<div class="mui-button-row" style="margin-top:20px;">
+					<button type="button" class="mui-btn mui-btn-primary mui-btn-outlined" v-on:click="swich()">{{isRegister?'登录':'注册'}}</button>
+					<button type="button" v-show="!isRegister" class="mui-btn mui-btn-primary" v-on:click="loginOrRegister()">登录</button>
+					<button type="button" v-show="isRegister" class="mui-btn mui-btn-primary" v-on:click="loginOrRegister()">注册</button>
+				</div>
+			</form>
+		</div>
+	</body>
+	<script type="text/javascript" src="../libs/vue/js/vue.js"></script>
+	<script type="text/javascript" src="../js/config.js"></script>
+	<script type="text/javascript" src="../js/app.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		var vue = new Vue({
+			el: '#app',
+			data: {
+				isRegister: false,
+				userLogin: {
+					username: '',
+					password: '',
+					rePassword: ''
+				}
+			},
+			methods: {
+				swich: function() {
+					this.isRegister = !this.isRegister;
+				},
+				//登录注册
+				loginOrRegister: function() {
+					loginOrRegister();
+				}
+			}
+		});
+
+		function check() {
+			var usernameReg = AppConfig.regExp.usernameReg;
+			if(!vue.userLogin.username.match(usernameReg)) {
+				mui.toast('用户名必须由4-20位数字及字母组成');
+				return false;
+			}
+			var passwordReg = AppConfig.regExp.passwordReg;
+			if(!vue.userLogin.password.match(passwordReg)) {
+				mui.toast('密码必须由6-15位数字及字母组成');
+				return false;
+			}
+			if(vue.isRegister) {
+				if(vue.userLogin.rePassword != vue.userLogin.password) {
+					mui.toast('两次密码输入不一致');
+					return false;
+				}
+			}
+			return true;
+		}
+
+		function loginOrRegister() {
+			if(!check()) {
+				return;
+			}
+			var url = '/user/login';
+			if(vue.isRegister) {
+				url = '/user/register';
+			}
+			var data = vue.userLogin;
+			AppUtils.http.postJson(url, data, function() {
+				if(data.code = '0') {
+					//登录注册成功
+					AppUtils.store.addUserInfo(data.data); //添加缓存
+					AppUtils.ui.goMainView(); //跳转到初始页面，并调用init方法
+					plus.webview.currentWebview().close('fade-out'); //关闭当前页
+				} else {
+					mui.toast(data.msg);
+				}
+			});
+		}
+
+		mui.plusReady(function() {
+			AppUtils.program.setBackPressExit(); //设置返回键为确认退出
+			plus.navigator.closeSplashscreen(); //关闭启动页
+
+		});
+	</script>
+
+</html>

@@ -1,0 +1,17 @@
+{
+  "index.html": {
+    "resources": [
+      "pages/message.html"
+    ],
+    "refer": [
+      "pages/linkList.html",
+      "pages/message.html",
+      "pages/login.html"
+    ]
+  },
+  "pages/message.html": {
+    "resources": [
+      "/images/head-icon.jpg"
+    ]
+  }
+}
