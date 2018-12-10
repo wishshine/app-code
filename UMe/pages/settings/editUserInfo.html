@@ -11,45 +11,46 @@
 	</head>
 
 	<body>
-		<header class="mui-bar mui-bar-nav theme-bac">
-			<i class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></i>
-			<h1 class="mui-title theme-color ">编辑</h1>
-		</header>
-		<div class="page-content" id="app">
-			<ul class="mui-table-view" style="margin-top: 20px;">
-				<li class="mui-table-view-cell  mui-input-row">
-					<label style="line-height: 40px;">头像</label>
-					<img class="mui-action-preview mui-pull-right" style="width: 60px;" src="../../images/head-icon.jpg">
-				</li>
-				<li class="mui-table-view-cell mui-input-row">
-					<label>用户名</label>
-					<input type="text" class="mui-pull-right" readonly="readonly" value="大春" v-model="userInfo.username">
-					<li class="mui-table-view-cell mui-input-row">
-						<label>昵称</label>
-						<input class="mui-pull-right" type="text" placeholder="输入昵称" v-model="userInfo.nickName">
+		<div id="app">
+			<header class="mui-bar mui-bar-nav theme-bac">
+				<i class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></i>
+				<h1 class="mui-title theme-color ">编辑</h1>
+			</header>
+			<div class="page-content">
+				<ul class="mui-table-view" style="margin-top: 20px;">
+					<li class="mui-table-view-cell  mui-input-row">
+						<label style="line-height: 40px;">头像</label>
+						<img class="mui-action-preview mui-pull-right" style="width: 60px;" src="../../images/head-icon.jpg">
 					</li>
 					<li class="mui-table-view-cell mui-input-row">
-						<label>性别</label>
-						<div class="mui-pull-right">
-							<div class="mui-input-row mui-radio">
-								<label>男</label>
-								<input name="sex" type="radio" v-bind:checked="userInfo.sex=='1'">
+						<label>用户名</label>
+						<input type="text" class="mui-pull-right" readonly="readonly" value="大春" v-model="userInfo.username">
+						<li class="mui-table-view-cell mui-input-row">
+							<label>昵称</label>
+							<input class="mui-pull-right" type="text" placeholder="输入昵称" v-model="userInfo.nickName">
+						</li>
+						<li class="mui-table-view-cell mui-input-row">
+							<label>性别</label>
+							<div class="mui-pull-right">
+								<div class="mui-input-row mui-radio">
+									<label>男</label>
+									<input name="sex" type="radio" value="1" v-bind:checked="userInfo.sex=='1'">
+								</div>
+								<div class="mui-input-row mui-radio">
+									<label>女</label>
+									<input name="sex" type="radio" value="2" v-bind:checked="userInfo.sex=='0'">
+								</div>
 							</div>
-							<div class="mui-input-row mui-radio">
-								<label>女</label>
-								<input name="sex" type="radio" v-bind:checked="userInfo.sex=='0'">
-							</div>
-						</div>
-					</li>
-					<li class="mui-table-view-cell">
-						自我介绍
-						<textarea style="margin-top: 10px;" placeholder="自我介绍一下吧..">{{userInfo.desc}}</textarea>
-					</li>
-			</ul>
-		</div>
-		</div>
-		<div class="bottom-bar-box">
-			<div class="bottom-btn">保存</div>
+						</li>
+						<li class="mui-table-view-cell">
+							自我介绍
+							<textarea style="margin-top: 10px;" placeholder="自我介绍一下吧..">{{userInfo.desc}}</textarea>
+						</li>
+				</ul>
+			</div>
+			<div class="bottom-bar-box">
+				<div class="bottom-btn" v-on:click="updateUserInfo()">保存</div>
+			</div>
 		</div>
 	</body>
 	<script type="text/javascript" src="../../libs/vue/js/vue.js"></script>
@@ -61,7 +62,11 @@
 			data: {
 				userInfo: []
 			},
-			methods: {}
+			methods: {
+				updateUserInfo: function() {
+					updateUserInfo();
+				}
+			}
 		});
 
 		mui.plusReady(function() {
@@ -80,7 +85,20 @@
 					mui.toast(data.msg);
 				}
 			});
+		}
 
+		function updateUserInfo() {
+			var userLogin = AppUtils.store.getUserLogin();
+			var url = '/user/updateUserInfo';
+			var param = vue.userInfo;
+			AppUtils.http.postJson(url, param, function(data) {
+				if(data.code == '0') {
+					mui.toast('保存成功');
+					plus.webview.currentWebview().close('fade-out'); //关闭当前页
+				} else {
+					mui.toast(data.msg);
+				}
+			});
 		}
 	</script>
 
