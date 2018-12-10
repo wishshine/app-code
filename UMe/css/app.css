@@ -6,3 +6,49 @@
 .theme-color {
 	color: #FFFFFF;
 }
+
+
+/**
+ * 联系人
+ */
+
+.oa-contact-cell,
+.mui-table-cell {
+	vertical-align: middle;
+}
+
+.oa-contact-avatar {
+	width: 70px;
+}
+
+.oa-contact-avatar img {
+	height: 60px;
+	width: 60px;
+	border: 1px solid #F3F3F3;
+}
+
+.bottom-bar-box {
+	position: fixed;
+	padding: 0;
+	margin: 0;
+	bottom: 0;
+	height: 50px;
+	width: 100%;
+}
+
+.bottom-btn {
+	height: 50px;
+	width: 100%;
+	line-height: 50px;
+	text-align: center;
+	background-color: #007AFF;
+	color: #FFFFFF;
+}
+
+.page-content {
+	padding: 44px 0 60px 0;
+}
+
+.show-text {
+	color: #AAAAAA;
+}

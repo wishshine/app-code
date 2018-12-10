@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<script src="../libs/mui/js/mui.min.js"></script>
+		<link href="../libs/mui/css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="../css/app.css" />
+	</head>
+
+	<body>
+		<ul class="mui-table-view mui-grid-view mui-grid-9" style="margin: 10px 0;">
+			<li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3">
+				<a href="#">
+					<span class="mui-icon mui-icon-pengyouquan"><span class="mui-badge">5</span></span>
+					<div class="mui-media-body">朋友圈</div>
+				</a>
+			</li>
+			<li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3">
+				<a href="#">
+					<span class="mui-icon mui-icon-star"></span>
+					<div class="mui-media-body">我的收藏</div>
+				</a>
+			</li>
+
+			<li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3">
+				<a href="#">
+					<span class="mui-icon mui-icon-mic"></span>
+					<div class="mui-media-body">语音助手</div>
+				</a>
+			</li>
+		</ul>
+
+		<ul class="mui-table-view">
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" id="editUserInfo">
+					新闻
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right">
+					游戏
+				</a>
+			</li>
+		</ul>
+	</body>
+	<script type="text/javascript" src="../libs/vue/js/vue.js"></script>
+	<script type="text/javascript" src="../js/config.js"></script>
+	<script type="text/javascript" src="../js/app.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		var messages = [{
+			remarkName: '大木',
+			headPic: '../images/head-icon.jpg',
+			content: '想要这样一间小木屋，夏天挫冰吃瓜，冬天围炉取暖.'
+		}, {
+			remarkName: '大春',
+			headPic: '../images/head-icon.jpg',
+			content: '想要这样2一间小木屋，夏天挫冰吃瓜，冬天围炉取暖.'
+		}];
+
+		var vue = new Vue({
+			el: '#app',
+			data: {
+				msgList: []
+			},
+			methods: {}
+		});
+
+		window.addEventListener("refresh", function(event) {
+			mui.toast('消息刷新。。。。');
+			console.log('消息刷新。。。。');
+			for(var i = 0; i < messages.length; i++) {
+				Vue.set(vue.msgList, i, messages[i]);
+			}
+		});
+
+		mui.plusReady(function() {
+			mui.init();
+		});
+	</script>
+
+</html>

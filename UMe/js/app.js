@@ -11,6 +11,7 @@
 				if(value != undefined && value != '') {
 					value = JSON.stringify(value);
 					localStorage.setItem(key, value);
+					console.log('添加本地缓存key:' + key + '---value:' + value);
 				}
 			}
 		},
@@ -21,6 +22,7 @@
 		getStoreValue: function(key) {
 			if(key != undefined && key != '') {
 				var value = localStorage.getItem(key);
+				console.log('获取本地缓存key:' + key + '---value:' + value)
 				if(value != undefined && value != '') {
 					value = JSON.parse(value);
 					return value;
@@ -29,35 +31,38 @@
 			return undefined;
 		},
 		/**
-		 * 缓存用户信息
-		 * @param {Object} userInfo
+		 * 移除缓存值
+		 * @param {Object} key
 		 */
-		addUserInfo: function(userInfo) {
+		removeStoreValue: function(key) {
+			if(key != undefined && key != '') {
+				var value = localStorage.getItem(key);
+				localStorage.removeItem(key);
+				console.log('移除本地缓存key:' + key + '---value:' + value);
+			}
+		},
+		/**
+		 * 缓存用户信息
+		 * @param {Object} UserLogin
+		 */
+		addUserLogin: function(UserLogin) {
 			var key = AppConfig.store.userKey;
-			store.addStroe(key, userInfo);
+			store.addStroe(key, UserLogin);
 		},
 		/**
 		 * 获取本地用户信息缓存值
 		 * @param {Object} key
 		 */
-		getUserInfo: function() {
+		getUserLogin: function() {
 			var key = AppConfig.store.userKey;
 			return store.getStoreValue(key);
 		},
 		/**
-		 * 缓存主程序ViewId
-		 * @param {Object} mainViewId
+		 * 移除本地用户缓存
 		 */
-		addMainViewId: function(mainViewId) {
-			var key = AppConfig.store.mainViewIdKey;
-			localStorage.setItem(key, mainViewId);
-		},
-		/**
-		 * 获取缓存主程序ViewId
-		 */
-		getMainViewId: function() {
-			var key = AppConfig.store.mainViewIdKey;
-			localStorage.getItem(key);
+		removeUserLogin: function() {
+			var key = AppConfig.store.userKey;
+			store.removeStoreValue(key);
 		},
 	};
 
@@ -131,26 +136,48 @@
 		 */
 		goLoginView: function() {
 			var loginPage = AppConfig.pages.login;
-			var view = plus.webview.create(loginPage.url, loginPage.id);
-			view.show();
+			var mainView = plus.webview.currentWebview();
+			if(mainView.id == loginPage.id) {
+				return;
+			}
+			var view = plus.webview.getWebviewById(loginPage.id);
+			if(view == null) {
+				view = plus.webview.create(loginPage.url, loginPage.id);
+				setTimeout(function() {
+					view.show('slide-in-left')
+				}, 500);
+			} else {
+				view.show('slide-in-right');
+			}
 		},
 		/**
 		 * 返回主页
 		 */
-		goMainView: function() {
+		reloadMainView: function() {
 			var mainViewId = AppUtils.store.getMainViewId();
 			var view = plus.webview.getLaunchWebview();
-			mui.fire(view, 'init');
+			view.reload();
 		}
 
 	};
 
 	var http = {
+		/**
+		 * ajax post请求
+		 * @param {Object} url
+		 * @param {Object} param
+		 * @param {Object} callBac
+		 */
 		postJson: function(url, param, callBac) {
 			url = AppConfig.http.requestHost + url; //
+			var userLogin = store.getUserLogin();
+			if(userLogin) {
+				url = url + '?_token=' + userLogin.token;
+			}
+			var sendData = param ? JSON.stringify(param) : undefined;
 			console.log('请求地址：' + url + ',请求参数：' + JSON.stringify(param));
 			mui.ajax(url, {
-				data: JSON.stringify(param),
+				data: sendData,
 				dataType: 'json', //服务器返回json格式数据
 				type: 'post', //HTTP请求类型
 				timeout: 10000, //超时时间设置为10秒；
@@ -161,6 +188,7 @@
 					console.log('请求地址：' + url + ',返回结果：' + JSON.stringify(data));
 					if(data.code == '-99') { //登录异常
 						mui.toast(data.msg);
+						AppUtils.store.removeUserLogin();
 						AppUtils.ui.goLoginView(); //跳转到登录页面
 					} else {
 						//执行回调函数
@@ -168,10 +196,9 @@
 					}
 				},
 				error: function(xhr, type, errorThrown) {
-					mask.closed();
 					//异常处理；
 					console.log(type);
-					mui.toast('与服务器连接异常:' + type + JSON.stringify(errorThrown));
+					mui.toast('与服务器连接异常:' + type);
 				}
 			});
 		}

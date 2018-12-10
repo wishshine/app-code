@@ -1,17 +1,30 @@
 {
-  "index.html": {
-    "resources": [
-      "pages/message.html"
-    ],
-    "refer": [
-      "pages/linkList.html",
-      "pages/message.html",
-      "pages/login.html"
-    ]
-  },
-  "pages/message.html": {
-    "resources": [
-      "/images/head-icon.jpg"
-    ]
-  }
+	"index.html": {
+		"resources": [
+			"pages/message.html"
+		],
+		"refer": [
+			"pages/linkList.html",
+			"pages/message.html",
+			"pages/login.html",
+			"pages/settings.html",
+			"pages/find.html"
+		]
+	},
+	"pages/message.html": {
+		"resources": [
+			"/images/head-icon.jpg"
+		]
+	},
+	"pages/settings.html": {
+		"refer": [
+			"pages/login.html",
+			"pages/settings/editUserInfo.html"
+		]
+	},
+	"pages/settings/editUserInfo.html": {
+		"refer": [
+			"pages/login.html"
+		]
+	}
 }

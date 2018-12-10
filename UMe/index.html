@@ -11,62 +11,82 @@
 	</head>
 
 	<body>
-		<header class="mui-bar mui-bar-nav theme-bac">
-			<h1 class="mui-title theme-color ">标题</h1>
-		</header>
-		<nav class="mui-bar mui-bar-tab" id="navBar">
-			<div class="mui-tab-item mui-active" page-id="message">
-				<span class="mui-icon mui-icon-email"></span>
-				<span class="mui-tab-label">消息</span>
-			</div>
-			<div class="mui-tab-item" page-id="linkList">
-				<span class="mui-icon mui-icon-contact"></span>
-				<span class="mui-tab-label">通讯录</span>
-			</div>
-			<div class="mui-tab-item" page-id="message">
-				<span class="mui-icon mui-icon-contact"></span>
-				<span class="mui-tab-label">发现</span>
-			</div>
-			<div class="mui-tab-item" page-id="message">
-				<span class="mui-icon mui-icon-gear"></span>
-				<span class="mui-tab-label">我的</span>
-			</div>
-		</nav>
+		<div id="app">
+			<header class="mui-bar mui-bar-nav theme-bac">
+				<h1 class="mui-title theme-color ">{{title}}</h1>
+			</header>
+			<nav class="mui-bar mui-bar-tab bor-top" id="navBar" style="border-top: 1px solid #DDDDDD;">
+				<div class="mui-tab-item mui-active" page-id="message">
+					<span class="mui-icon mui-icon-email"><span class="mui-badge">9</span></span>
+					<span class="mui-tab-label">消息</span>
+				</div>
+				<div class="mui-tab-item" page-id="linkList">
+					<span class="mui-icon mui-icon-contact"></span>
+					<span class="mui-tab-label">通讯录</span>
+				</div>
+				<div class="mui-tab-item" page-id="find">
+					<span class="mui-icon mui-icon-navigate"></span>
+					<span class="mui-tab-label">发现</span>
+				</div>
+				<div class="mui-tab-item" page-id="settings">
+					<span class="mui-icon mui-icon-gear"></span>
+					<span class="mui-tab-label">设置</span>
+				</div>
+			</nav>
+		</div>
 	</body>
+	<script type="text/javascript" src="libs/vue/js/vue.js"></script>
 	<script type="text/javascript" src="js/config.js"></script>
 	<script type="text/javascript" src="js/app.js"></script>
 	<script type="text/javascript" charset="utf-8">
+		var firstPageId = AppConfig.firstPageId; //初始
+		var initPageConfig = AppConfig.subpages[firstPageId]; //初始页面
 		var indexData = {
-			subpages: [], //子页面
-			activePageId: '', //激活页id
+			subpages: AppConfig.subpages, //子页面
+			activePageId: firstPageId //激活页面
 		};
 
+		var vue = new Vue({
+			el: '#app',
+			data: {
+				title: initPageConfig.title
+			}
+		});
+
+		mui.plusReady(function() {
+			init(); //初始化			
+		});
+
+		function init() {
+			initSubpages(); //初始化页面
+			bindEvent(); //添加事件绑定				
+			AppUtils.program.setBacendRun(); //设置返回后台运行
+			if(isNeedLogin()) {
+				AppUtils.ui.goLoginView(); //跳转到登录页面
+				return;
+			}
+			var firstView = plus.webview.getWebviewById(AppConfig.firstPageId);
+			mui.fire(firstView, 'refresh', {}); //刷新message页面
+			setTimeout(function() {
+				plus.navigator.closeSplashscreen(); //关闭启动页
+			}, 1000);
+		}
+
 		function isNeedLogin() {
-			var userInfo = AppUtils.store.getUserInfo();
-			if(userInfo == undefined || AppUtils.common.isStrBlank(userInfo.token)) {
+			var userLogin = AppUtils.store.getUserLogin();
+			console.log('获取缓存用户信息：' + JSON.stringify(userLogin));
+			if(userLogin == undefined || AppUtils.common.isStrBlank(userLogin.token)) {
 				return true;
 			}
 			return false;
 		}
 
-		function init() {
-			mui.toast('调用初始化');
-			if(isNeedLogin()) {
-				AppUtils.ui.goLoginView(); //跳转到登录页面
-				return;
-			}
-			initSubpages();
-			bindEvent();
-		}
-
 		function initSubpages() {
-			indexData.subpages = AppConfig.subpages;
-			indexData.activePageId = AppConfig.activePageId;
 			var self = plus.webview.currentWebview();
 			for(var key in indexData.subpages) {
 				var subpage = indexData.subpages[key];
 				var sub = plus.webview.create(subpage.url, subpage.id, subpage.styles);
-				if(key != indexData.activePageId) {
+				if(key != AppConfig.firstPageId) {
 					sub.hide();
 				}
 				self.append(sub);
@@ -75,21 +95,17 @@
 
 		function bindEvent() {
 			mui("#navBar").on('tap', '.mui-tab-item', function() {
-				//获取id
-				var pageId = this.getAttribute("page-id");
-				console.log(pageId);
+				var pageId = this.getAttribute("page-id"); //获取id
 				if(pageId == indexData.activePageId) {
-					retrun;
+					return;
 				}
-				plus.webview.getWebviewById(pageId).show('fade-in');
+				vue.title = AppConfig.subpages[pageId].title; //更换标题
+				var view = plus.webview.getWebviewById(pageId);
+				mui.fire(view, 'refresh', {});
+				view.show('fade-in');
 				indexData.activePageId = pageId;
 			});
 		}
-
-		mui.plusReady(function() {
-			init(); //初始化
-
-		});
 	</script>
 
 </html>

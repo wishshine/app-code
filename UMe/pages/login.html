@@ -11,29 +11,31 @@
 	</head>
 
 	<body>
-		<header class="mui-bar mui-bar-nav">
-			<h1 class="mui-title">登录</h1>
-		</header>
-		<div id="app" class="mui-content" style="margin-top: 20px;">
-			<form class="mui-input-group" style="padding: 20px 0 10px 0;">
-				<div class="mui-input-row">
-					<label>用户名</label>
-					<input type="text" v-model="userLogin.username" class="mui-input-clear" placeholder="请输入用户名">
-				</div>
-				<div class="mui-input-row">
-					<label>密码</label>
-					<input type="password" v-model="userLogin.password" class="mui-input-password" placeholder="请输入密码">
-				</div>
-				<div class="mui-input-row" v-show="isRegister">
-					<label>确认密码</label>
-					<input type="password" v-model="userLogin.rePassword" class="mui-input-password" placeholder="请输入密码">
-				</div>
-				<div class="mui-button-row" style="margin-top:20px;">
-					<button type="button" class="mui-btn mui-btn-primary mui-btn-outlined" v-on:click="swich()">{{isRegister?'登录':'注册'}}</button>
-					<button type="button" v-show="!isRegister" class="mui-btn mui-btn-primary" v-on:click="loginOrRegister()">登录</button>
-					<button type="button" v-show="isRegister" class="mui-btn mui-btn-primary" v-on:click="loginOrRegister()">注册</button>
-				</div>
-			</form>
+		<div id="app">
+			<header class="mui-bar mui-bar-nav">
+				<h1 class="mui-title">{{isRegister?'注册':'登录'}}</h1>
+			</header>
+			<div class="mui-content" style="margin-top: 20px;">
+				<form class="mui-input-group" style="padding: 20px 0 10px 0;">
+					<div class="mui-input-row">
+						<label>用户名</label>
+						<input type="text" v-model="userLogin.username" class="mui-input-clear" placeholder="请输入用户名">
+					</div>
+					<div class="mui-input-row">
+						<label>密码</label>
+						<input type="password" v-model="userLogin.password" class="mui-input-password" placeholder="请输入密码">
+					</div>
+					<div class="mui-input-row" v-show="isRegister">
+						<label>确认密码</label>
+						<input type="password" v-model="userLogin.rePassword" class="mui-input-password" placeholder="请输入密码">
+					</div>
+					<div class="mui-button-row" style="margin-top:20px;">
+						<button type="button" class="mui-btn mui-btn-primary mui-btn-outlined" v-on:click="swich()">{{isRegister?'登录':'注册'}}</button>
+						<button type="button" v-show="!isRegister" class="mui-btn mui-btn-primary" v-on:click="loginOrRegister()">登录</button>
+						<button type="button" v-show="isRegister" class="mui-btn mui-btn-primary" v-on:click="loginOrRegister()">注册</button>
+					</div>
+				</form>
+			</div>
 		</div>
 	</body>
 	<script type="text/javascript" src="../libs/vue/js/vue.js"></script>
@@ -61,7 +63,13 @@
 			}
 		});
 
+		var userLogin = AppUtils.store.getUserLogin();
+		if(userLogin != undefined) {
+			vue.userLogin.username = userLogin.username;
+		}
+
 		function check() {
+			console.log('校验登录，userLogin：' + JSON.stringify(vue.userLogin));
 			var usernameReg = AppConfig.regExp.usernameReg;
 			if(!vue.userLogin.username.match(usernameReg)) {
 				mui.toast('用户名必须由4-20位数字及字母组成');
@@ -89,15 +97,22 @@
 			if(vue.isRegister) {
 				url = '/user/register';
 			}
-			var data = vue.userLogin;
-			AppUtils.http.postJson(url, data, function() {
-				if(data.code = '0') {
+			var param = vue.userLogin;
+			AppUtils.http.postJson(url, param, function(data) {
+				console.log('回调：' + JSON.stringify(data));
+				if(data.code == '0') {
 					//登录注册成功
-					AppUtils.store.addUserInfo(data.data); //添加缓存
-					AppUtils.ui.goMainView(); //跳转到初始页面，并调用init方法
+					var userLogin = data.data;
+					AppUtils.store.addUserLogin(userLogin); //添加缓存
+					var mainView = plus.webview.getLaunchWebview();
+					console.log(mainView.id);
+					var firstView = plus.webview.getWebviewById(AppConfig.firstPageId);
+					mui.fire(firstView, 'refresh', {}); //刷新message页面
+					mainView.show('fade-in');
 					plus.webview.currentWebview().close('fade-out'); //关闭当前页
 				} else {
 					mui.toast(data.msg);
+					return;
 				}
 			});
 		}
